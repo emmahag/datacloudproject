@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: step4datacloud-app
+spec:
+  entrypoint: step4datacloud-app
+  templates:
+  - name: step4datacloud-app
+    steps:
+    - - name: step1
+        template: step1
+    - - name: step2
+        template: step2
+    - - name: step3
+        template: step3
+    - - name: step4
+        template: step4
+
+  - name: step1
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python step1.py"]
+    outputs:
+      artifacts:
+        - name: sampledata
+        - path: /data
+
+  - name: step2
+    inputs:
+      artifacts:
+        - name: sampledata
+        - path: /data
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python step2.py"]
+
+  - name: step3
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python step3.py"]
+
+  - name: step4
+
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python step4.py"]
+
+
+  dependencies:
+  - name: step1
+    condition:
+      status: Succeeded
+  - name: step2
+    condition:
+      status: Succeeded
+  - name: step3
+    condition:
+      status: Succeeded

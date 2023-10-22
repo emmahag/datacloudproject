@@ -1,0 +1,117 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: datacloud-app
+spec:
+  entrypoint: datacloud-app
+  templates:
+  - name: datacloud-app
+    steps:
+    - - name: unzip
+        template: unzip
+    - - name: transform
+        template: transform
+    - - name: splitdata
+        template: splitdata
+    - - name: cleandata
+        template: cleandata
+    - - name: sendto
+        template: sendtoarango
+    - - name: config-rabbitmq
+      template: config-rabbitmq
+
+  - name: unzip
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python unzipStep1.py"]
+    outputs:
+      artifacts:
+        - name: unzippedfiles
+          path: /unzipped
+
+  - name: transform
+    inputs:
+      artifacts:
+        - name: tsvfiles
+          path: /unzipped
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python tsvToCsvStep2.py"]
+    outputs:
+      artifacts:
+        - name: csvfiles
+          path: /csvfiles
+
+  - name: splitdata
+    inputs:
+      artifacts:
+        - name: csvfiles
+          path: /csvfiles
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python splitDataStep3.py"]
+    outputs:
+      artifacts:
+        - name: splitteddata
+          path: /splitteddata
+
+  - name: cleandata
+    inputs:
+      artifacts:
+        - name: splitteddata
+          path: /splitteddata
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python cleanPreprocessStep4.py"]
+    outputs:
+      artifacts:
+        - name: cleaneddata
+          path: /cleaneddata
+
+  - name: sendtoarango
+    inputs:
+      artifacts:
+        - name: cleaneddata
+          path: /cleaneddata
+    container:
+      image: python:3.8
+      command: ["/bin/sh", "-c"]
+      args: ["python sendToArangoStep5.py"]
+    outputs:
+      artifacts:
+        - name: arangoformatteddata
+          path: /toarango
+
+  - name: config-rabbitmq
+    resource:
+      action: create
+      successCondition: status.phase == Succeeded
+      failureCondition: status.phase == Failed
+      manifest: |
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: config-rabbitmq
+        data:
+          RABBITMQ_HOST: dummyhostname
+          RABBITMQ_PORT: "portnumber"
+          RABBITMQ_USER: username
+          RABBITMQ_PASSWORD: password123
+
+  dependencies:
+  - name: unzip
+    condition:
+      status: Succeeded
+  - name: transform
+    condition:
+      status: Succeeded
+  - name: splitdata
+    condition:
+      status: Succeeded
+  - name: cleandata
+    condition:
+      status: Succeeded

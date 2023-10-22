@@ -1,0 +1,1 @@
+Before running the application make sure to download and install RabbitMQ

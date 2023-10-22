@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  step1:
+    build: 
+      context: ./step1
+  step2:
+    build: 
+      context: ./step2
+  step3:
+    build: 
+      context: ./step3
+  step4:
+    build: 
+      context: ./step4
+
+  mqtt:
+    image: toke/mosquitto
+    network_mode: bridge
+    container_name: mqtt
+    expose:
+      - 1883
+    ports:
+      - 1883:1883
+    restart: unless-stopped

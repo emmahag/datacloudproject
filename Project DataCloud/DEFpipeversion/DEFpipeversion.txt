@@ -1,0 +1,43 @@
+Pipeline Root {
+	communicationMedium: medium 
+	steps:
+		- data-source step Unzip
+			implementation: container-implementation image: 'cc3ba543a04b'
+			environmentParameters: {
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+		- data-processing step Convert
+			implementation: container-implementation image: '745e8cd55210'
+			environmentParameters: {
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+			previous: [Unzip]
+		- data-processing step Split
+			implementation: container-implementation image: '1332b077cc6a'
+			environmentParameters: {
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+			previous: [Convert]
+		- data-processing step Transform
+			implementation: container-implementation image: '173d547d2656'
+			environmentParameters: {
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+			previous: [Split]
+		- data-processing step ToArango
+			implementation: container-implementation image: '32ab1603b29b'
+			environmentParameters: {
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+			previous: [Transform]
+}

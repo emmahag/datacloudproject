@@ -1,0 +1,44 @@
+Pipeline Root {
+	communicationMedium: medium 
+	steps:
+		- data-source step GenerateSampleData
+			implementation: container-implementation image:  'python:3.8'
+			environmentParameters: {
+
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+
+
+		- data-source step ReceiveDataFromMQTT
+			implementation: container-implementation image:  'python:3.8'
+			environmentParameters: {
+
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+			previous: [GenerateSampleData]
+
+		- data-source step CreateNotification
+			implementation: container-implementation image:  'python:3.8'
+			environmentParameters: {
+
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+			previous: [ReceiveDataFromMQTT]
+
+		- data-source step FilterNotifications
+			implementation: container-implementation image: 'python:3.8'
+			environmentParameters: {
+
+			}
+			resourceProvider: 
+			executionRequirement:
+				hardRequirements:					
+			previous: [CreateNotification]
+}
+

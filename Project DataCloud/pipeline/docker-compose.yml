@@ -1,0 +1,12 @@
+version: '3'
+services:
+  step1:
+    build: ./UnzipStep1.py
+  step2:
+    build: ./tsvToCsvStep2.py
+  step3:
+    build: ./splitDataStep3.py
+  step4:
+    build: ./cleanPreprocessStep4.py
+  step5:
+    build: ./sendToArangoStep5.py
